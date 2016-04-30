@@ -1,0 +1,6 @@
+source "https://supermarket.chef.io"
+
+metadata
+
+cookbook 'cwb', '~> 0.1.0'
+cookbook 'apt', '~> 2.9.2'

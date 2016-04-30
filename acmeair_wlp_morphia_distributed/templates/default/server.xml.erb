@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="new server">
+
+    <!-- Enable features -->
+    <featureManager>
+         <feature>webProfile-7.0</feature>
+         <feature>mongodb-2.0</feature>
+         <feature>jndi-1.0</feature>
+    </featureManager>
+
+    <library id="mongo-lib">
+        <file name="${shared.resource.dir}/mongodb/mongo-java-driver-2.12.2.jar" />
+    </library>
+    <application id="acmeair-webapp" name="acmeair-webapp" type="war" location="acmeair-webapp-2.0.0-SNAPSHOT.war">
+        <classloader commonLibraryRef="mongo-lib" />
+    </application>
+
+    <mongo id="mongo" libraryRef="mongo-lib" hostNames="<%= @mongodb_ip %>" ports="<%= @mongodb_port %>" user="<%= @mongodb_user_name %>" password="<%= @mongodb_user_password %>"/>
+    <mongoDB jndiName="mongo/acmeairMongodb" mongoRef="mongo" databaseName="<%= @mongodb_name %>"/>
+
+    <jndiEntry jndiName="com/acmeair/repository/type" value="morphia"/>
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                  httpPort="9080"
+                  httpsPort="9443"
+                  host = "0.0.0.0" />
+
+    <!-- Automatically expand WAR files and EAR files -->
+    <applicationManager autoExpand="true"/>
+</server>

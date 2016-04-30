@@ -1,0 +1,25 @@
+---
+driver:
+  name: vagrant
+  network:
+    - ["private_network", {ip: "192.168.34.37"}]
+
+provisioner:
+  name: chef_zero
+
+# Uncomment the following verifier to leverage Inspec instead of Busser (the
+# default verifier)
+# verifier:
+#   name: inspec
+
+platforms:
+  - name: ubuntu-14.04
+    driver:
+      customize:
+        memory: 1024
+
+suites:
+  - name: default
+    run_list:
+      - recipe[cwb-jmeter::default]
+    attributes:

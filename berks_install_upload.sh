@@ -1,0 +1,1 @@
+for d in ./*/ ; do (cd "$d" && berks install && berks upload --force); done

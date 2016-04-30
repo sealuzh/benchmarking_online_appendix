@@ -1,0 +1,13 @@
+name 'acmeair_wlp_morphia'
+maintainer 'Christian Davatz'
+maintainer_email 'crixx@davatz.eu'
+license 'all_rights'
+description 'Installs/Configures acmeair_wlp_morphia'
+long_description 'Installs/Configures acmeair_wlp_morphia'
+version '0.1.0'
+
+depends 'apt', '~> 2.9.2'
+depends 'firewall', '~> 2.4.0'
+depends 'java', '~> 1.39.0'
+depends 'wlp', '~> 0.3.0'
+depends 'mongodb', '~> 0.16.2'

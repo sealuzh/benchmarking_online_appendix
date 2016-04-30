@@ -1,0 +1,116 @@
+# The following variables are available
+# benchmark_name: Name of the benchmark definition from the web interface
+# benchmark_name_sanitized: benchmark_name where all non-word-characters are replaced with an underscore '_'
+# benchmark_id: The unique benchmark definition identifier
+# execution_id: The unique benchmark execution identifier
+# chef_node_name: The default node name used for Chef client provisioning
+# tag_name: The default tag name set as aws name tag
+
+SSH_USERNAME = 'ubuntu'
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.ssh.username = SSH_USERNAME
+
+  config.vm.define "jmeter_master", primary: true do |jmeter_master|
+    jmeter_master.vm.provider :aws do |aws, override|
+      aws.region = 'eu-central-1'
+      aws.ami = 'ami-d19e79be'
+      aws.instance_type = 't2.micro'
+      aws.security_groups = ['cwb-web']
+      aws.private_ip_address = '172.31.15.1'
+      aws.availability_zone = 'eu-central-1a'
+    
+      aws.tags = {
+        'CWB_Function' => 'jmeter'
+      }
+    end
+  
+    jmeter_master.vm.provision 'cwb', type: 'chef_client' do |chef|
+      chef.node_name = 'jmeter_master'+execution_id.to_s
+      chef.add_recipe 'cwb-jmeter'
+      chef.add_recipe 'acmeair-single'  # Version is optional
+      chef.json =
+        {
+          'benchmark' => {
+              'logging_enabled' =>true
+          },
+          'config' => {
+              'hosts' => '172.31.3.1',
+              'remotes' => '',
+              'slave' => false
+          }
+        }
+#      chef.delete_node = true
+#      chef.delete_client = true
+    end
+  end
+  
+  config.vm.define "webapp" do |webapp|
+    webapp.vm.provider :aws do |aws, override|
+      aws.region = 'eu-central-1'
+      aws.ami = 'ami-d19e79be'
+      aws.instance_type = 't2.micro'
+      aws.security_groups = ['cwb-web']
+      aws.private_ip_address = '172.31.3.1'
+      aws.availability_zone = 'eu-central-1a'
+      aws.tags = {
+        'CWB_Function' => 'acmeair-morphia-webapp'
+      }
+    end
+  
+    webapp.vm.provision 'cwb', type: 'chef_client' do |chef|
+      chef.add_recipe 'acmeair_wlp_morphia_distributed'
+      chef.node_name = 'webapp'+execution_id.to_s
+      #chef.add_recipe 'jmeter-simple'  # Version is optional
+      #chef.json =
+      #  {
+      #    'benchmark' => {
+      #        'logging_enabled' =>true
+      #    }
+      #  }
+  #    chef.delete_node = true
+  #    chef.delete_client = true
+    end
+  end
+  
+  
+  config.vm.define "mongodb" do |mongodb|
+    mongodb.vm.provider :aws do |aws, override|
+      aws.region = 'eu-central-1'
+      aws.ami = 'ami-d19e79be'
+      aws.instance_type = 't2.micro'
+      aws.security_groups = ['cwb-web']
+      aws.private_ip_address = '172.31.2.1'
+      aws.availability_zone = 'eu-central-1a'
+      aws.tags = {
+        'CWB_Function' => 'acmeair-mongodb'
+      }
+    end
+
+    mongodb.vm.provision 'cwb', type: 'chef_client' do |chef|
+      chef.add_recipe 'acmeair_mongodb'
+      chef.node_name = 'mongodb'+execution_id.to_s
+#      chef.delete_node = true
+#      chef.delete_client = true
+    end
+  end
+  
+end
+
+# config.vm.provider :google do |google, override|
+#   google.image = 'debian-7-wheezy-v20140619'
+#   google.machine_type = 'n1-standard-1'
+#   google.zone = 'europe-west1-a'
+# end
+
+# config.vm.provider :azure do |azure, override|
+#   azure_common.call(azure, override)
+#   azure.vm_image = 'b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_04-LTS-amd64-server-20140414-en-us-30GB'
+#   azure.vm_user = SSH_USERNAME
+#   azure.vm_size = 'ExtraSmall'
+#   azure.vm_location = 'North Europe'
+# end
+
+# config.vm.provider :softlayer do |softlayer, override|
+#   softlayer.datacenter = 'mel01'
+#   softlayer.operating_system = 'UBUNTU_14_64'
+# end

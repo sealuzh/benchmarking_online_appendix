@@ -1,0 +1,13 @@
+DEPENDENCIES
+  acmeair-single
+    path: .
+    metadata: true
+  apt (~> 2.9.2)
+  cwb (~> 0.1.0)
+
+GRAPH
+  acmeair-single (0.1.0)
+    apt (~> 2.9.2)
+    cwb (~> 0.1.0)
+  apt (2.9.2)
+  cwb (0.1.2)

@@ -1,0 +1,12 @@
+name 'acmeair_wlp_wxs'
+maintainer 'Christian Davatz'
+maintainer_email 'crixx@davatz.eu'
+license 'all_rights'
+description 'Installs/Configures acmeair_wlp_wxs'
+long_description 'Installs/Configures acmeair_wlp_wxs'
+version '0.1.0'
+
+depends 'apt', '~> 2.9.2'
+depends 'firewall', '~> 2.4.0'
+depends 'java', '~> 1.39.0'
+depends 'wlp', '~> 0.3.0'
