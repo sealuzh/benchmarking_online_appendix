@@ -2,7 +2,11 @@
 #default['cwb-jmeter']['open_ports'] = [80]
 override[:java][:jdk_version] = 7
 
-default['config']['hosts'] = '172.31.3.1'
-default['config']['remotes'] = '127.0.0.1'
+default['cwbjmeter']['config']['hosts'] = '172.31.3.1'
+default['cwbjmeter']['config']['remotes'] = '127.0.0.1'
+default['cwbjmeter']['config']['slave'] = false
+default['cwbjmeter']['config']['ssh_username'] = 'ubuntu'
 
-default['config']['jmeter']['slave'] = false
+
+default['cwbjmeter']['target_host']['port'] = 9080
+default['cwbjmeter']['target_host']['name'] = '172.31.3.1'

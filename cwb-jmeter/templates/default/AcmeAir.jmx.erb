@@ -57,8 +57,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">${WLP_HOSTS}</stringProp>
-          <stringProp name="HTTPSampler.port">9080</stringProp>
+          <!--stringProp name="HTTPSampler.domain">${WLP_HOSTS}</stringProp-->
+          <stringProp name="HTTPSampler.domain"><%= @target_host_name %></stringProp>
+          <stringProp name="HTTPSampler.port"><%= @target_host_port %></stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>

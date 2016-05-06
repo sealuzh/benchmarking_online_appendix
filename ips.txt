@@ -1,8 +1,0 @@
-Kitchen IPs
-
-192.168.34.34 - wlp-morphia
-192.168.34.35 - wlp-wxs
-192.168.34.36 - mongodb
-192.168.34.37 - jmeter-master
-192.168.34.38 - wlp-morphia-distributed
-192.168.34.39 - jmeter_slave

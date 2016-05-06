@@ -7,7 +7,7 @@
 
 include_recipe 'firewall::default'
 
-ports = node.default['wlp_morphia_server']['open_ports']
+ports = node[:firewall][:ports]
 firewall_rule "open ports #{ports}" do
   port ports
 end
@@ -86,7 +86,9 @@ template '/opt/was/liberty/wlp/usr/servers/server1/server.xml' do
 	 :mongodb_port => node[:mongodb][:port],
 	 :mongodb_name => node[:mongodb][:name],
 	 :mongodb_user_name => node[:mongodb][:user][:name],
-	 :mongodb_user_password => node[:mongodb][:user][:password]
+	 :mongodb_user_password => node[:mongodb][:user][:password],
+   :http_port => node[:config][:webapp][:port][:http],
+   :https_port => node[:config][:webapp][:port][:https]
 	})
 end
 
@@ -104,12 +106,11 @@ end
 ruby_block 'load_users_to_db' do
   block do   
     require 'net/http'
-    res = Net::HTTP.get_response(URI("http://localhost:#{node[:config][:webapp][:port]}/acmeair-webapp/rest/info/loader/load?numCustomers=#{node[:config][:webapp][:users_to_load]}"))
-    #res = Net::HTTP.get_response(URI("http://localhost:9080/acmeair-webapp/rest/info/loader/load?numCustomers=200"))
+    res = Net::HTTP.get_response(URI("http://localhost:#{node[:config][:webapp][:port][:http]}/acmeair-webapp/rest/info/loader/load?numCustomers=#{node[:config][:webapp][:users_to_load]}"))
     if  res.body.include? "Loaded flights and"
     else
       raise "An error has occured: #{res.code} #{res.message}"
     end
   end
-  retries 30
+  retries 60
 end
