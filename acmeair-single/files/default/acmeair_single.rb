@@ -11,20 +11,41 @@ class AcmeairSingle < Cwb::Benchmark
 
 		Dir.chdir('/usr/share/jmeter/bin') do
 			delete_old_results
-			system(run_cmd)
+
+			if is_distributed
+				@logger.info "--execute run_cmd_distributed_benchmark"
+				system(run_cmd_distributed_benchmark)
+			else
+				@logger.info "--execute run_cmd_single"
+				system(run_cmd_single)				
+			end
+
 			fail 'JMeter exited with non-zero value' unless $?.success?
 			results = process_results
-			@cwb.submit_metric(metric_name, timestamp, results[:average_response_time])
-			@cwb.submit_metric('average_response_time_inline', timestamp, results[:average_response_time])
+
+			@cwb.submit_metric('start_time', timestamp, results[:start_time])
+			@cwb.submit_metric('end_time', timestamp, results[:end_time])
+			@cwb.submit_metric('total_time', timestamp, results[:total_time])
+
+			@cwb.submit_metric('total_response_time', timestamp, results[:total_response_time])
+			@cwb.submit_metric('average_response_time', timestamp, results[:average_response_time])
+			@cwb.submit_metric('total_latency', timestamp, results[:total_latency])
 			@cwb.submit_metric('average_latency', timestamp, results[:average_latency])
 			@cwb.submit_metric('average_processing_time', timestamp, results[:average_processing_time])
+
+			@cwb.submit_metric('total_count', timestamp, results[:total_count])
 			@cwb.submit_metric('num_failures', timestamp, results[:num_failures])
 			@cwb.submit_metric('num_success', timestamp, results[:num_success])
+
 			@cwb.submit_metric('failure_rate', timestamp, results[:failure_rate])
 			@cwb.submit_metric('success_rate', timestamp, results[:success_rate])
-			@cwb.submit_metric('total_count', timestamp, results[:total_count])
-			@cwb.submit_metric('total_time', timestamp, results[:total_time])
+
+			@cwb.submit_metric('failure_rate_percent', timestamp, results[:failure_rate_percent])
+			@cwb.submit_metric('success_rate_percent', timestamp, results[:success_rate_percent])
+			
 			@cwb.submit_metric('results', timestamp, results.to_s)
+
+			@logger.info results
 		end
 		
 		@logger.info "execute terminated"
@@ -38,12 +59,21 @@ class AcmeairSingle < Cwb::Benchmark
 		end
 	end
 
+	#get time since epoch in miliseconds
 	def timestamp
-		Time.now.to_i
+		(Time.now.to_f * 1000).to_i
 	end
 
-	def run_cmd
+	def run_cmd_single
 		"jmeter -n -t AcmeAir.jmx -j AcmeAir1.log -l AcmeAir1.jtl"
+	end
+
+	def run_cmd_distributed_benchmark
+		"jmeter -n -t AcmeAir.jmx -j AcmeAir1.log -l AcmeAir1.jtl -r"
+	end
+
+	def is_distributed
+		@cwb.deep_fetch('acmeair-single', 'distributed_benchmark')
 	end
 
 	def results_file
@@ -67,7 +97,7 @@ class AcmeairSingle < Cwb::Benchmark
 		total_latency = 0
 		num_failures = 0
 		num_success = 0
-		start_time = 32503676400 #3000-01-01 00:00:00 +0100
+		start_time = 32503676400000 #Wed Jan 01 3000 00:00:00 GMT+0100
 		end_time = 0
 
 		CSV.foreach(results_file, headers:true) do |row|
@@ -90,15 +120,26 @@ class AcmeairSingle < Cwb::Benchmark
 		end
 
 		results = {
-			total_count: total_count,
+			start_time: start_time,
+			end_time: end_time,
+			total_time: (end_time-start_time),
+
+			total_response_time:total_response_time,
 			average_response_time: (total_response_time.to_f / total_count),
+			total_latency: total_latency,
 			average_latency: (total_latency.to_f / total_count),
 			average_processing_time: ((total_response_time.to_f - total_latency.to_f) / total_count),
+
+			total_count: total_count,
 			num_failures: num_failures,
 			num_success: num_success,
+
+			#https://en.wikipedia.org/wiki/Failure_rate
 			failure_rate: (num_failures.to_f / total_response_time),
 			success_rate: (num_success.to_f / total_response_time),
-			total_time: (end_time-start_time)
+
+			failure_rate_percent: (num_failures.to_f / total_count.to_f),
+			success_rate_percent: (num_failures.to_f / total_count.to_f)
 		}
 	end
 end
