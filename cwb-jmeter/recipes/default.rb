@@ -21,9 +21,23 @@ end
 #install java
 include_recipe 'java::default'
 
-#install jmeter
-apt_package 'jmeter' do
+#apt-get does not provide the latest version if jmeter
+cookbook_file '/usr/share/jmeter.zip' do
+  source 'jmeter.zip'
+  mode '0644'
+  action :create
+end
+
+#install unzip
+apt_package 'unzip' do
   action :install
+end
+
+#unzip jmeter
+execute 'unzip_jmeter' do
+  command 'unzip jmeter.zip'
+  cwd '/usr/share/'
+  not_if {::File.directory?('/usr/share/jmeter') }
 end
 
 #download the src files for the jmeter-test
@@ -60,22 +74,15 @@ execute 'copy_json_simple' do
   not_if {::File.exists?('/apache-jmeter-2.13/lib/ext/json-simple-1.1.1.jar') }
 end
 
-#insert a config and other files needed for the test
-#cookbook_file '/usr/share/jmeter/bin/hosts.csv' do
-#  source 'hosts.csv'
-#  mode '0777'
-#  action :create
+#template '/usr/share/jmeter/bin/hosts.csv' do
+#  source 'hosts.csv.erb'
+#  mode '0644'
+#  owner 'root'
+#  group 'root'
+#  variables({
+#     :hosts => node[:cwbjmeter][:config][:hosts]
+#  })
 #end
-
-template '/usr/share/jmeter/bin/hosts.csv' do
-  source 'hosts.csv.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables({
-     :hosts => node[:cwbjmeter][:config][:hosts]
-  })
-end
 
 cookbook_file '/usr/share/jmeter/bin/Airports.csv' do
   source 'Airports.csv'
@@ -112,12 +119,14 @@ template '/usr/share/jmeter/bin/AcmeAir.jmx' do
   owner 'root'
   group 'root'
   variables({
-     :target_host_port => node[:cwbjmeter][:target_host][:port],
-     :target_host_name => node[:cwbjmeter][:target_host][:name]
+    :target_host_port => node[:cwbjmeter][:target_host][:port],  
+    :target_host_name => node[:cwbjmeter][:target_host][:name],
+    :threadgroup_num_threads => node[:cwbjmeter][:threadgroup][:num_threads],
+    :threadgroup_ramp_up_time => node[:cwbjmeter][:threadgroup][:ramp_up_time],
+    :threadgroup_duration => node[:cwbjmeter][:threadgroup][:duration],
+    :threadgroup_delay => node[:cwbjmeter][:threadgroup][:delay]
   })
 end
-
-
 
 execute 'update_permissions_jm_bin_folder' do
   command "sudo chown #{node[:cwbjmeter][:config][:ssh_username]} bin/"
@@ -127,6 +136,23 @@ end
 execute 'update_permissions_jm_bin_files' do
   command "sudo chown #{node[:cwbjmeter][:config][:ssh_username]} *"
   cwd '/usr/share/jmeter/bin/'
+end
+
+execute 'update_permissions_jm_jmeter_jmeter_server' do
+  command "sudo chmod 0744 jmeter jmeter-server"
+  cwd '/usr/share/jmeter/bin/'
+end
+
+execute 'add_jmeter_to_registry' do
+  command "ln -s /usr/share/jmeter/bin/jmeter"
+  cwd '/usr/local/bin/'
+  not_if {::File.exists?('/usr/local/bin/jmeter') }
+end
+
+execute 'add_jmeter_server_to_registry' do
+  command "ln -s /usr/share/jmeter/bin/jmeter-server"
+  cwd '/usr/local/bin/'
+  not_if {::File.exists?('/usr/local/bin/jmeter') }
 end
 
 execute 'run_jmeter_as_slave' do

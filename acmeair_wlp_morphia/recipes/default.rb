@@ -109,3 +109,8 @@ wlp_server "server1" do
   clean true
   action :start
 end
+
+execute 'run_vmstat' do
+  command 'sudo nohup vmstat 5 > vmstat.log &'
+  cwd '/'
+end

@@ -139,7 +139,7 @@ class AcmeairSingle < Cwb::Benchmark
 			success_rate: (num_success.to_f / total_response_time),
 
 			failure_rate_percent: (num_failures.to_f / total_count.to_f),
-			success_rate_percent: (num_failures.to_f / total_count.to_f)
+			success_rate_percent: (num_success.to_f / total_count.to_f)
 		}
 	end
 end

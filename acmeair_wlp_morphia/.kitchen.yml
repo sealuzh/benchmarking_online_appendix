@@ -3,6 +3,8 @@ driver:
   name: vagrant
   network:
     - ["private_network", {ip: "192.168.34.34"}]
+  synced_folders:
+   - ["synced", "/synced"]
 
 provisioner:
   name: chef_zero
@@ -16,7 +18,7 @@ platforms:
   - name: ubuntu-14.04
     driver:
       customize:
-        memory: 1024
+        memory: 256
 
 suites:
   - name: default
