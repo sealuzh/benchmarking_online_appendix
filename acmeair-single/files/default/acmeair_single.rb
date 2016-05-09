@@ -21,6 +21,11 @@ class AcmeairSingle < Cwb::Benchmark
 			end
 
 			fail 'JMeter exited with non-zero value' unless $?.success?
+
+			@logger.info "upload file to fileserver"
+			system(upload_jtl_to_server)
+			fail 'file upload failed' unless $?.success?
+
 			results = process_results
 
 			@cwb.submit_metric('start_time', timestamp, results[:start_time])
@@ -64,6 +69,11 @@ class AcmeairSingle < Cwb::Benchmark
 		(Time.now.to_f * 1000).to_i
 	end
 
+	def timestamp_formatted
+		t = Time.now
+		t = t.localtime.strftime "%Y-%m-%d_%H-%M-%S"
+	end
+
 	def run_cmd_single
 		"jmeter -n -t AcmeAir.jmx -j AcmeAir1.log -l AcmeAir1.jtl"
 	end
@@ -76,16 +86,32 @@ class AcmeairSingle < Cwb::Benchmark
 		@cwb.deep_fetch('acmeair-single', 'distributed_benchmark')
 	end
 
-	def results_file
-		'AcmeAir1.jtl'
+	def results_file_name
+		'AcmeAir1'
 	end
 
-	def metric_name
-		@cwb.deep_fetch('acmeair-single', 'metric_name')
+	def results_file
+		"#{results_file_name}.jtl"
+	end
+
+	def filserver_ip
+		@cwb.deep_fetch('acmeair-single', 'fileserver','ip')
+	end
+
+	def fileserver_port
+		@cwb.deep_fetch('acmeair-single', 'fileserver','port')
+	end
+
+	def fileserver_resource
+		@cwb.deep_fetch('acmeair-single', 'fileserver','resource')
 	end
 
 	def delete_old_results
 		File.delete(results_file) if File.exist?(results_file)
+	end
+
+	def upload_jtl_to_server
+		"curl -i -F file=@#{results_file_name} -F name='#{results_file_name}-#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
 	def process_results

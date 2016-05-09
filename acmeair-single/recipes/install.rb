@@ -13,3 +13,7 @@
 
 include_recipe 'apt'
 package 'sysbench'
+
+package 'curl' do
+	action :install
+end
