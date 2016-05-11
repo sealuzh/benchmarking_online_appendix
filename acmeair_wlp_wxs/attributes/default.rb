@@ -12,3 +12,5 @@ override[:wlp][:install_method] = 'zip'
 override[:wlp][:zip][:url] = 'https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/downloads/wlp/8.5.5.9/wlp-webProfile7-8.5.5.9.zip'
 override[:wlp][:install_java] = 'false'
 
+default['config']['webapp']['users_to_load'] = 200
+

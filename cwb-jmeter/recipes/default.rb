@@ -152,7 +152,7 @@ end
 execute 'add_jmeter_server_to_registry' do
   command "ln -s /usr/share/jmeter/bin/jmeter-server"
   cwd '/usr/local/bin/'
-  not_if {::File.exists?('/usr/local/bin/jmeter') }
+  not_if {::File.exists?('/usr/local/bin/jmeter-server') }
 end
 
 execute 'run_jmeter_as_slave' do

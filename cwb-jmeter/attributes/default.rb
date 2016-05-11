@@ -15,3 +15,5 @@ default['cwbjmeter']['threadgroup']['num_threads'] = 20
 default['cwbjmeter']['threadgroup']['ramp_up_time'] = 20
 default['cwbjmeter']['threadgroup']['duration'] = 300
 default['cwbjmeter']['threadgroup']['delay'] = 0
+
+#actually we could split up the config into two distinct modes: master and slave

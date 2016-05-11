@@ -153,3 +153,15 @@ end
 #execute 'export_mongodb_VCAP' do
 #  command 'export VCAP_SERVICES=\'{"mongo":[{"credentials":{"url":"mongodb://<user>:<pwd>@<host>:<port>/<dbname>"}}]}\''
 #end
+
+ruby_block 'load_users_to_db' do
+  block do   
+    require 'net/http'
+    res = Net::HTTP.get_response(URI("http://localhost:9080/acmeair-webapp/rest/info/loader/load?numCustomers=#{node[:config][:webapp][:users_to_load]}"))
+    if  res.body.include? "Loaded flights and"
+    else
+      raise "An error has occured: #{res.code} #{res.message}"
+    end
+  end
+  retries 60
+end
