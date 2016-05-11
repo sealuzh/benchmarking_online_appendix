@@ -111,7 +111,7 @@ class AcmeairSingle < Cwb::Benchmark
 	end
 
 	def upload_jtl_to_server
-		"curl -i -F file=@#{results_file_name} -F name='#{results_file_name}-#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+		"curl -i -F file=@#{results_file} -F name='#{results_file_name}-#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
 	def process_results
