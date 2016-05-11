@@ -16,7 +16,7 @@ end
 
 
 
-fileserver_dir = '/usr/local/share/fileserver'
+fileserver_dir = '/usr/share/fileserver'
 
 directory fileserver_dir do
   owner node[:fileserver][:config][:ssh_username]
@@ -32,6 +32,14 @@ cookbook_file "#{fileserver_dir}/#{fileserver_filename}" do
 end
 
 execute 'run_fileserver' do
-  command "java -jar #{fileserver_filename}"
+  command "sudo nohup java -jar #{fileserver_filename} &"
   cwd "#{fileserver_dir}"
+end
+
+template '/etc/rc.local' do
+  source 'rc.local.erb'
+  variables({
+     :fileserver_dir => fileserver_dir,
+     :fileserver_filename => fileserver_filename
+  })
 end
