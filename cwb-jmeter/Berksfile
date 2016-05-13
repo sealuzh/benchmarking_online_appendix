@@ -1,7 +1,3 @@
 source 'https://supermarket.chef.io'
 
 metadata
-
-cookbook 'apt', '~> 2.9.2'
-cookbook 'firewall', '~> 2.4.0'
-cookbook 'java', '~> 1.39.0'

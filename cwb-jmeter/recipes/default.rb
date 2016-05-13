@@ -13,10 +13,6 @@ end
 #sudo apt-get update
 include_recipe 'apt::default'
 
-#install git
-apt_package 'git' do
-  action :install
-end
 
 #install java
 include_recipe 'java::default'
@@ -40,50 +36,6 @@ execute 'unzip_jmeter' do
   not_if {::File.directory?('/usr/share/jmeter') }
 end
 
-#download the src files for the jmeter-test
-git '/acmeair-driver' do
-  repository 'https://github.com/acmeair/acmeair-driver.git'
-  revision 'master'
-  action :sync
-end
-
-#build the jmeter-test jar
-execute 'build_driver' do
-  command './gradlew build'
-  cwd '/acmeair-driver'
-end
-
-#copy the jmeter-test.jar to jmeter install folder
-execute 'copy_loader' do
-  command 'cp /acmeair-driver/acmeair-jmeter/build/libs/acmeair-jmeter-*-SNAPSHOT.jar  /usr/share/jmeter/lib/ext/'
-  cwd '/'
-  not_if {::File.exists?('/apache-jmeter-2.13/lib/ext/acmeair-jmeter-*-SNAPSHOT.jar') }
-end
-
-#download an additional json mapper
-execute 'download_json_simple' do
-  command 'wget http://json-simple.googlecode.com/files/json-simple-1.1.1.jar'
-  cwd '/'
-  not_if {::File.exists?('/json-simple-1.1.1.jar') }
-end
-
-#copy the json mapper to jmeter install folder
-execute 'copy_json_simple' do
-  command 'cp /json-simple-1.1.1.jar  /usr/share/jmeter/lib/ext/'
-  cwd '/'
-  not_if {::File.exists?('/apache-jmeter-2.13/lib/ext/json-simple-1.1.1.jar') }
-end
-
-#template '/usr/share/jmeter/bin/hosts.csv' do
-#  source 'hosts.csv.erb'
-#  mode '0644'
-#  owner 'root'
-#  group 'root'
-#  variables({
-#     :hosts => node[:cwbjmeter][:config][:hosts]
-#  })
-#end
-
 cookbook_file '/usr/share/jmeter/bin/Airports.csv' do
   source 'Airports.csv'
   mode '0644'
@@ -96,35 +48,20 @@ cookbook_file '/usr/share/jmeter/bin/Airports2.csv' do
   action :create
 end
 
-cookbook_file '/usr/share/jmeter/bin/user.properties' do
-  source 'user.properties'
+cookbook_file '/usr/share/jmeter/bin/jmeter.properties' do
+  source 'jmeter.properties'
   mode '0644'
   action :create
 end
 
-template '/usr/share/jmeter/bin/jmeter.properties' do
-  source 'jmeter.properties.erb'
+
+template '/usr/share/jmeter/bin/user.properties' do
+  source 'user.properties.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables({
      :remotes => node[:cwbjmeter][:config][:remotes]
-  })
-end
-
-
-template '/usr/share/jmeter/bin/AcmeAir.jmx' do
-  source 'AcmeAir.jmx.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables({
-    :target_host_port => node[:cwbjmeter][:target_host][:port],  
-    :target_host_name => node[:cwbjmeter][:target_host][:name],
-    :threadgroup_num_threads => node[:cwbjmeter][:threadgroup][:num_threads],
-    :threadgroup_ramp_up_time => node[:cwbjmeter][:threadgroup][:ramp_up_time],
-    :threadgroup_duration => node[:cwbjmeter][:threadgroup][:duration],
-    :threadgroup_delay => node[:cwbjmeter][:threadgroup][:delay]
   })
 end
 

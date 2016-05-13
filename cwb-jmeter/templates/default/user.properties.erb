@@ -1,0 +1,22 @@
+# Remote Hosts - comma delimited
+remote_hosts=<%= @remotes %>
+
+#logging
+log_level.jmeter=INFO
+log_level.jmeter.junit=DEBUG
+log_level.jorphan=INFO
+
+# results output config
+jmeter.save.saveservice.output_format=csv
+jmeter.save.saveservice.thread_counts=true
+jmeter.save.saveservice.print_field_names=true
+
+sampleresult.timestamp.start=true
+
+# used for non gui mode
+log_level.jmeter.reporters.Summariser=INFO
+summariser.name=summary
+summariser.interval=30
+summariser.log=true
+
+sample_variables=FLIGHTTOCOUNT,FLIGHTRETCOUNT,ONEWAY
