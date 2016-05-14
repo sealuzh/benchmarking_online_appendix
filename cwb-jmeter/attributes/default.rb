@@ -7,4 +7,6 @@ default['cwbjmeter']['config']['remotes'] = '127.0.0.1'
 default['cwbjmeter']['config']['slave'] = false
 default['cwbjmeter']['config']['ssh_username'] = 'ubuntu'
 
-#actually we could split up the config into two distinct modes: master and slave
+default['cwbjmeter']['config']['user_properties']['sample_variables'] = ''
+
+default['cwbjmeter']['config']['jmeter_root'] = "/usr/share/jmeter"
