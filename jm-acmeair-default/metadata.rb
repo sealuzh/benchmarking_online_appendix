@@ -7,4 +7,3 @@ long_description 'Installs/Configures jm-acmeair-default'
 version '0.1.0'
 
 depends 'cwb-jmeter'
-depends 'apt', '~> 2.9.2'

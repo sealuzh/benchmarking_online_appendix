@@ -1,0 +1,1 @@
+default['acmeairdefaultassets']['jmeter']['root_dir'] = "/usr/share/jmeter"

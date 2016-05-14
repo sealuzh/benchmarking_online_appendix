@@ -7,44 +7,10 @@
 
 include_recipe 'cwb-jmeter::default'
 
-
-#sudo apt-get update
-include_recipe 'apt::default'
-
-#install unzip
-apt_package 'unzip' do
-  action :install
-end
-
-#insert the driver.jar
-cookbook_file '/usr/share/jmeter/lib/ext/acmeair-jmeter-1.1.0-SNAPSHOT.jar' do
-  source 'acmeair-jmeter-1.1.0-SNAPSHOT.jar'
-  mode '0644'
-  action :create
-end
-
-#insert the json-mapper.jar
-cookbook_file '/usr/share/jmeter/lib/ext/json-simple-1.1.1.jar' do
-  source 'json-simple-1.1.1.jar'
-  mode '0644'
-  action :create
-end
-
-# currently not used - this task is currently done by the cwb-jmeter cookbook but should be changed
-#cookbook_file '/usr/share/jmeter/bin/Airports.csv' do
-#  source 'Airports.csv'
-#  mode '0644'
-#  action :create
-#end
-
-#cookbook_file '/usr/share/jmeter/bin/Airports2.csv' do
-#  source 'Airports2.csv'
-#  mode '0644'
-#  action :create
-#end
+jmeter_root = node[:cwbjmeter][:config][:jmeter_root]
 
 #update the testplan.jmx
-template '/usr/share/jmeter/bin/AcmeAir.jmx' do
+template "#{jmeter_root}/bin/AcmeAir.jmx" do
   source 'AcmeAir.jmx.erb'
   mode '0644'
   owner 'root'

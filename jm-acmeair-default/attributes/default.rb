@@ -10,3 +10,9 @@ default['acmeairdefault']['testplan']['threadgroup']['num_threads'] = 500
 default['acmeairdefault']['testplan']['threadgroup']['ramp_up_time'] = 120
 default['acmeairdefault']['testplan']['threadgroup']['duration'] = 300
 default['acmeairdefault']['testplan']['threadgroup']['delay'] = 0
+
+#override the jmeter sample_variables
+default['cwbjmeter']['config']['user_properties']['sample_variables'] = 'FLIGHTTOCOUNT,FLIGHTRETCOUNT,ONEWAY'
+
+#override and use the path jmeter_root
+default['cwbjmeter']['config']['jmeter_root'] = "/usr/share/jmeter"
