@@ -22,10 +22,6 @@ class AcmeairSingle < Cwb::Benchmark
 
 			fail 'JMeter exited with non-zero value' unless $?.success?
 
-			@logger.info "upload file to fileserver"
-			system(upload_jtl_to_server)
-			fail 'file upload failed' unless $?.success?
-
 			results = process_results
 
 			@cwb.submit_metric('start_time', timestamp, results[:start_time])
@@ -51,6 +47,18 @@ class AcmeairSingle < Cwb::Benchmark
 			@cwb.submit_metric('results', timestamp, results.to_s)
 
 			@logger.info results
+		
+			if results_file_upload_enabled
+				@logger.info "-- upload #{results_file} to file to fileserver"
+				system(upload_jtl_to_server)
+				fail 'results file: upload failed' unless $?.success?
+			end
+
+			if log_file_upload_enabled
+				@logger.info "-- upload #{log_file} to file to fileserver"
+				system(upload_log_to_server)
+				fail 'log file: upload failed' unless $?.success?
+			end
 		end
 		
 		@logger.info "execute terminated"
@@ -75,11 +83,11 @@ class AcmeairSingle < Cwb::Benchmark
 	end
 
 	def run_cmd_single
-		"jmeter -n -t AcmeAir.jmx -j AcmeAir1.log -l AcmeAir1.jtl"
+		"jmeter -n -t #{testplan_file} -j #{log_file} -l #{results_file}"
 	end
 
 	def run_cmd_distributed_benchmark
-		"jmeter -n -t AcmeAir.jmx -j AcmeAir1.log -l AcmeAir1.jtl -r"
+		"#{run_cmd_single} -r"
 	end
 
 	def is_distributed
@@ -90,12 +98,36 @@ class AcmeairSingle < Cwb::Benchmark
 		@cwb.deep_fetch('acmeair-single', 'upload_file_name')
 	end
 
+	def testplan_file_name
+		@cwb.deep_fetch('acmeair-single', 'testplan_file_name')
+	end
+
+	def testplan_file
+		"#{testplan_file_name}.jmx"
+	end
+
+	def log_file_name
+		@cwb.deep_fetch('acmeair-single', 'log_file_name')
+	end
+
+	def log_file
+		"#{log_file_name}.log"
+	end
+
+	def log_file_upload_enabled
+		@cwb.deep_fetch('acmeair-single', 'log_file_upload_enabled')
+	end
+
 	def results_file_name
-		'AcmeAir1'
+		'results'
 	end
 
 	def results_file
 		"#{results_file_name}.jtl"
+	end
+
+	def results_file_upload_enabled
+		@cwb.deep_fetch('acmeair-single', 'results_file_upload_enabled')
 	end
 
 	def filserver_ip
@@ -118,10 +150,11 @@ class AcmeairSingle < Cwb::Benchmark
 		"curl -i -F file=@#{results_file} -F name='#{upload_file_name}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
-	def process_results
-		#more metrics see http://jmeter-plugins.org/wiki/JMeterPluginsCMD/
-		#http://stackoverflow.com/questions/18510846/jmeter-latency-vs-load-timesample-time
+	def upload_log_to_server
+		"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	end
 
+	def process_results
 		total_count = 0
 		total_response_time = 0
 		total_latency = 0
