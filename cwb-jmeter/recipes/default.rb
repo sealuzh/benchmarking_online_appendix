@@ -28,7 +28,7 @@ directory jmeter_root do
 end
 
 execute 'extract_jmeter_tgz' do
-  command '  tar -xvf apache-jmeter-2.13.tgz --strip-components=1'
+  command '  tar -xvf /tmp/apache-jmeter-2.13.tgz --strip-components=1'
   cwd jmeter_root
   not_if { File.directory?("#{jmeter_root}/bin") }
 end
