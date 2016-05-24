@@ -3,8 +3,8 @@ default['acmeair-single']['distributed_benchmark'] = false
 
 default['acmeair-single']['testplan_file_name'] = "jmeter_testplan"
 
-default['acmeair-single']['upload_file_name'] = "jmeter_results"
 default['acmeair-single']['results_file_upload_enabled'] = true
+default['acmeair-single']['upload_file_name'] = "jmeter_results"
 
 default['acmeair-single']['log_file_upload_enabled'] = false
 default['acmeair-single']['log_file_name'] = "jmeter_logfile"
