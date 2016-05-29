@@ -3,70 +3,90 @@ require 'csv'
 require 'logger'
 
 class AcmeairSingle < Cwb::Benchmark
-@logger = 'benchmark-execution.log'
+#declare the global logger
+@logger = nil
+@file_path = nil
 	
+	#this is the only method that is called by cwb
 	def execute
-		init_logger
-		@logger.info "execute started"
+		init_logger_and_path
+		@logger.info "Benchmark execution started"
 
 		Dir.chdir('/usr/share/jmeter/bin') do
-			delete_old_results
+			for i in 0..(benchmark_iterations-1)
+				begin
+					@logger.info "------ Iteration #{i} ------"
+					delete_old_results
 
-			if is_distributed
-				@logger.info "--execute run_cmd_distributed_benchmark"
-				system(run_cmd_distributed_benchmark)
-			else
-				@logger.info "--execute run_cmd_single"
-				system(run_cmd_single)				
-			end
+					if is_distributed
+						@logger.info "Executing run_cmd_distributed_benchmark"
+						system(run_cmd_distributed_benchmark)
+					else
+						@logger.info "Executing run_cmd_single"
+						system(run_cmd_single)				
+					end
 
-			fail 'JMeter exited with non-zero value' unless $?.success?
+					fail 'JMeter exited with non-zero value' unless $?.success?
 
-			results = process_results
+					results = process_results
 
-			@cwb.submit_metric('start_time', timestamp, results[:start_time])
-			@cwb.submit_metric('end_time', timestamp, results[:end_time])
-			@cwb.submit_metric('total_time', timestamp, results[:total_time])
+					#submit the metrics back to the cwb server
+					@cwb.submit_metric('start_time', timestamp, results[:start_time])
+					@cwb.submit_metric('end_time', timestamp, results[:end_time])
+					@cwb.submit_metric('total_time', timestamp, results[:total_time])
+					@cwb.submit_metric('total_response_time', timestamp, results[:total_response_time])
+					@cwb.submit_metric('average_response_time', timestamp, results[:average_response_time])
+					@cwb.submit_metric('total_latency', timestamp, results[:total_latency])
+					@cwb.submit_metric('average_latency', timestamp, results[:average_latency])
+					@cwb.submit_metric('average_processing_time', timestamp, results[:average_processing_time])
+					@cwb.submit_metric('total_count', timestamp, results[:total_count])
+					@cwb.submit_metric('num_failures', timestamp, results[:num_failures])
+					@cwb.submit_metric('num_success', timestamp, results[:num_success])
+					@cwb.submit_metric('failure_rate', timestamp, results[:failure_rate])
+					@cwb.submit_metric('success_rate', timestamp, results[:success_rate])
+					@cwb.submit_metric('failure_rate_percent', timestamp, results[:failure_rate_percent])
+					@cwb.submit_metric('success_rate_percent', timestamp, results[:success_rate_percent])
+					@cwb.submit_metric('results', timestamp, results.to_s)
 
-			@cwb.submit_metric('total_response_time', timestamp, results[:total_response_time])
-			@cwb.submit_metric('average_response_time', timestamp, results[:average_response_time])
-			@cwb.submit_metric('total_latency', timestamp, results[:total_latency])
-			@cwb.submit_metric('average_latency', timestamp, results[:average_latency])
-			@cwb.submit_metric('average_processing_time', timestamp, results[:average_processing_time])
+					#save the metrics locally to a file
+					metrics_file_name = @cwb.deep_fetch('acmeair-single', 'logging','metrics_file_name')
+					File.open("#{@file_path}/#{metrics_file_name}", 'a+') {|f| f.puts(results) }
+					@logger.info "Metrics saved to #{@file_path}/#{metrics_file_name}"
+				
+					if results_file_upload_enabled
+						@logger.info "Uploading #{results_file} to file to fileserver"
+						system(upload_jtl_to_server_cmd)
+						fail 'Results file: upload failed' unless $?.success? 
+					end
 
-			@cwb.submit_metric('total_count', timestamp, results[:total_count])
-			@cwb.submit_metric('num_failures', timestamp, results[:num_failures])
-			@cwb.submit_metric('num_success', timestamp, results[:num_success])
+					if log_file_upload_enabled
+						@logger.info "Uploading #{log_file} to file to fileserver"
+						system(upload_log_to_server_cmd)
+						fail 'Log file: upload failed' unless $?.success?
+					end
 
-			@cwb.submit_metric('failure_rate', timestamp, results[:failure_rate])
-			@cwb.submit_metric('success_rate', timestamp, results[:success_rate])
-
-			@cwb.submit_metric('failure_rate_percent', timestamp, results[:failure_rate_percent])
-			@cwb.submit_metric('success_rate_percent', timestamp, results[:success_rate_percent])
-			
-			@cwb.submit_metric('results', timestamp, results.to_s)
-
-			@logger.info results
-		
-			if results_file_upload_enabled
-				@logger.info "-- upload #{results_file} to file to fileserver"
-				system(upload_jtl_to_server)
-				fail 'results file: upload failed' unless $?.success?
-			end
-
-			if log_file_upload_enabled
-				@logger.info "-- upload #{log_file} to file to fileserver"
-				system(upload_log_to_server)
-				fail 'log file: upload failed' unless $?.success?
+				rescue => e
+					@logger.error e
+					raise
+				end	
 			end
 		end
 		
-		@logger.info "execute terminated"
+		@logger.info "Benchmark terminated successfully."
 	end
 
 
-	def init_logger
-		@logger = Logger.new('benchmark-execution.log')
+	def init_logger_and_path
+		file_path_in_config = @cwb.deep_fetch('acmeair-single', 'logging','file_path')
+		execution_log_file_name = @cwb.deep_fetch('acmeair-single', 'logging','execution_log_file_name')
+
+		if file_path_in_config.eql? "default"
+			@file_path =  File.expand_path(File.dirname(__FILE__))
+		else
+			@file_path = file_path_in_config
+		end
+
+		@logger = Logger.new("#{@file_path}/#{execution_log_file_name}")
 		@logger.formatter = proc do |severity, datetime, progname, msg|
 		   "#{severity} [#{datetime.strftime('%Y-%m-%d %H:%M:%S.%6N')} ##{Process.pid}]: #{msg}\n"
 		end
@@ -146,11 +166,11 @@ class AcmeairSingle < Cwb::Benchmark
 		File.delete(results_file) if File.exist?(results_file)
 	end
 
-	def upload_jtl_to_server
+	def upload_jtl_to_server_cmd
 		"curl -i -F file=@#{results_file} -F name='#{upload_file_name}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
-	def upload_log_to_server
+	def upload_log_to_server_cmd
 		"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
@@ -204,5 +224,9 @@ class AcmeairSingle < Cwb::Benchmark
 			failure_rate_percent: (num_failures.to_f / total_count.to_f),
 			success_rate_percent: (num_success.to_f / total_count.to_f)
 		}
+	end
+
+	def benchmark_iterations
+		@cwb.deep_fetch('acmeair-single','benchmark_iterations')
 	end
 end
