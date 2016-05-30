@@ -51,6 +51,20 @@ template "#{jmeter_root}/bin/user.properties" do
   })
 end
 
+template "#{jmeter_root}/bin/jmeter" do
+  source 'jmeter.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables({
+     :xms_heap_size => node[:cwbjmeter][:config][:xms_heap_size],
+     :xmx_heap_size => node[:cwbjmeter][:config][:xmx_heap_size],
+  })
+end
+
+
+
+
 execute 'update_permissions_jm_bin_folder' do
   command "sudo chown #{node[:cwbjmeter][:config][:ssh_username]} bin/"
   cwd jmeter_root

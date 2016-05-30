@@ -7,6 +7,9 @@ default['cwbjmeter']['config']['remotes'] = '127.0.0.1'
 default['cwbjmeter']['config']['slave'] = false
 default['cwbjmeter']['config']['ssh_username'] = 'ubuntu'
 
+default['cwbjmeter']['config']['xms_heap_size'] = '512m'
+default['cwbjmeter']['config']['xmx_heap_size'] = '1024m'
+
 default['cwbjmeter']['config']['user_properties']['sample_variables'] = ''
 
 default['cwbjmeter']['config']['jmeter_root'] = "/usr/share/jmeter"
