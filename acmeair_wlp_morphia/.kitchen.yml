@@ -18,7 +18,7 @@ platforms:
   - name: ubuntu-14.04
     driver:
       customize:
-        memory: 256
+        memory: 512
 
 suites:
   - name: default

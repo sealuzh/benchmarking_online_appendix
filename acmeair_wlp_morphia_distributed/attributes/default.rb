@@ -1,4 +1,3 @@
-default['config']['webapp']['users_to_load'] = 200
 default['config']['webapp']['port']['http'] = 9080
 default['config']['webapp']['port']['https'] = 9443
 

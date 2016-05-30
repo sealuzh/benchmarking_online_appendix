@@ -1,0 +1,1 @@
+db.createUser({user: "<%= @db_user_name %>",pwd: "<%= @db_user_password %>",roles: [ { role: "readWrite", db: "<%= @db_name %>" },{ role: "dbAdmin", db: "<%= @db_name %>" }]});

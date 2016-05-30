@@ -110,19 +110,46 @@ wlp_server "server1" do
   action :start
 end
 
+directory "/dump" do
+  owner 'root'
+  group 'root'
+  mode '0644'
+  action :create
+end
+
+
+cookbook_file '/acmeair_mongodb_dump.tar.gz' do
+  mode '0644'
+  not_if {::File.exists?('/acmeair_mongodb_dump.tar.gz') }
+end
+
+execute 'untar_dump' do
+  command 'tar -xvzf acmeair_mongodb_dump.tar.gz -C /dump'
+  not_if { ::File.directory?('/dump/admin') }
+end
+
+execute 'looad_db_from_dump' do
+  command "mongorestore --port #{node[:mongodb][:port]} /dump"
+  not_if { ::File.directory?('/dump/admin') }
+end
+
+
+template '/load_db_user.js' do
+  source 'load_db_user.js.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables({
+    :db_name => node[:mongodb][:name]
+  })
+end
+
+execute 'looad_db_user_to_db' do
+  command "mongo localhost:#{node[:mongodb][:port]}/#{node[:mongodb][:name]} /load_db_user.js"
+  not_if { ::File.directory?('/dump/admin') }
+end
+
 #execute 'run_vmstat' do
 #  command 'sudo nohup vmstat 5 > vmstat.log &'
 #  cwd '/'
 #end
-
-ruby_block 'load_users_to_db' do
-  block do   
-    require 'net/http'
-    res = Net::HTTP.get_response(URI("http://localhost:9080/acmeair-webapp/rest/info/loader/load?numCustomers=#{node[:config][:webapp][:users_to_load]}"))
-    if  res.body.include? "Loaded flights and"
-    else
-      raise "An error has occured: #{res.code} #{res.message}"
-    end
-  end
-  retries 60
-end
