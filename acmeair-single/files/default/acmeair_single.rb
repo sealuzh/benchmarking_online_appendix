@@ -54,13 +54,13 @@ class AcmeairSingle < Cwb::Benchmark
 					@logger.info "Metrics saved to #{@file_path}/#{metrics_file_name}"
 				
 					if results_file_upload_enabled
-						@logger.info "Uploading #{results_file} to file to fileserver"
+						@logger.info "Uploading #{results_file} to fileserver"
 						system(upload_jtl_to_server_cmd)
 						fail 'Results file: upload failed' unless $?.success? 
 					end
 
 					if log_file_upload_enabled
-						@logger.info "Uploading #{log_file} to file to fileserver"
+						@logger.info "Uploading #{log_file} to fileserver"
 						system(upload_log_to_server_cmd)
 						fail 'Log file: upload failed' unless $?.success?
 					end
@@ -114,10 +114,6 @@ class AcmeairSingle < Cwb::Benchmark
 		@cwb.deep_fetch('acmeair-single', 'distributed_benchmark')
 	end
 
-	def upload_file_name
-		@cwb.deep_fetch('acmeair-single', 'upload_file_name')
-	end
-
 	def testplan_file_name
 		@cwb.deep_fetch('acmeair-single', 'testplan_file_name')
 	end
@@ -139,7 +135,7 @@ class AcmeairSingle < Cwb::Benchmark
 	end
 
 	def results_file_name
-		'results'
+		@cwb.deep_fetch('acmeair-single', 'results_file_name')
 	end
 
 	def results_file
@@ -167,7 +163,7 @@ class AcmeairSingle < Cwb::Benchmark
 	end
 
 	def upload_jtl_to_server_cmd
-		"curl -i -F file=@#{results_file} -F name='#{upload_file_name}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+		"curl -i -F file=@#{results_file} -F name='#{results_file_name}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
 	def upload_log_to_server_cmd
