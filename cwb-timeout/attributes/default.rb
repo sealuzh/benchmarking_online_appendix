@@ -1,0 +1,1 @@
+default['cwb-timeout']['timeout_in_minutes'] = 240

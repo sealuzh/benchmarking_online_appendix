@@ -1,0 +1,5 @@
+source "https://supermarket.chef.io"
+
+metadata
+
+cookbook 'cwb', '~> 0.1.0'
