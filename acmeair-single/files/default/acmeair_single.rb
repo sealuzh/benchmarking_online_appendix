@@ -48,6 +48,12 @@ class AcmeairSingle < Cwb::Benchmark
 					@cwb.submit_metric('success_rate_percent', timestamp, results[:success_rate_percent])
 					@cwb.submit_metric('results', timestamp, results.to_s)
 
+					jtl_results=process_jtl_results
+					@cwb.submit_metric('total_thread_count', timestamp, jtl_results[:total_thread_count])
+					@cwb.submit_metric('singl_thread_counts', timestamp, jtl_results[:singl_thread_counts])
+					@cwb.submit_metric('jtl_results', timestamp, jtl_results.to_s)
+
+
 					#save the metrics locally to a file
 					metrics_file_name = @cwb.deep_fetch('acmeair-single', 'logging','metrics_file_name')
 					File.open("#{@file_path}/#{metrics_file_name}", 'a+') {|f| f.puts(results) }
@@ -55,13 +61,13 @@ class AcmeairSingle < Cwb::Benchmark
 				
 					if results_file_upload_enabled
 						@logger.info "Uploading #{results_file} to fileserver"
-						system(upload_jtl_to_server_cmd)
+						system(upload_jtl_to_server_cmd(i))
 						fail 'Results file: upload failed' unless $?.success? 
 					end
 
 					if log_file_upload_enabled
 						@logger.info "Uploading #{log_file} to fileserver"
-						system(upload_log_to_server_cmd)
+						system(upload_log_to_server_cmd(i))
 						fail 'Log file: upload failed' unless $?.success?
 					end
 
@@ -162,12 +168,12 @@ class AcmeairSingle < Cwb::Benchmark
 		File.delete(results_file) if File.exist?(results_file)
 	end
 
-	def upload_jtl_to_server_cmd
-		"curl -i -F file=@#{results_file} -F name='#{results_file_name}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	def upload_jtl_to_server_cmd(iteration)
+		"curl -i -F file=@#{results_file} -F name='#{results_file_name}_#{iteration}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
-	def upload_log_to_server_cmd
-		"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	def upload_log_to_server_cmd(iteration)
+		"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{iteration}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
 	def process_results
@@ -179,7 +185,7 @@ class AcmeairSingle < Cwb::Benchmark
 		start_time = 32503676400000 #Wed Jan 01 3000 00:00:00 GMT+0100
 		end_time = 0
 
-		CSV.foreach(results_file, headers:true) do |row|
+		CSV.foreach(results_file, {:headers => true}) do |row|
 			total_count += 1
 			total_response_time += row['elapsed'].to_i
 			total_latency += row['Latency'].to_i
@@ -224,5 +230,28 @@ class AcmeairSingle < Cwb::Benchmark
 
 	def benchmark_iterations
 		@cwb.deep_fetch('acmeair-single','benchmark_iterations')
+	end
+
+	def process_jtl_results
+		thread_groups = Hash.new
+		time_stamp = 0
+		CSV.foreach(results_file, {:headers => true}) do |row|
+			#add the currentThreadGroup to the hash and update its allThread count
+		   current_thread_name = row['threadName'].split(" ").first
+		   thread_groups.store(current_thread_name, row['allThreads'].to_i)
+
+		   #find out when the first error occured
+		   if row['success'] != true.to_s
+		   		time_stamp = row['timeStamp']
+		   		break
+		   end
+		end
+
+		singl_thread_counts = thread_groups.values
+		total_thread_count = singl_thread_counts.inject(0, :+)
+		return { 
+			total_thread_count: total_thread_count,
+			singl_thread_counts: singl_thread_counts.to_s 
+		}
 	end
 end
