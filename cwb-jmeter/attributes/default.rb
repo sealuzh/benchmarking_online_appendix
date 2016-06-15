@@ -8,7 +8,7 @@ default['cwbjmeter']['config']['slave'] = false
 default['cwbjmeter']['config']['ssh_username'] = 'ubuntu'
 
 default['cwbjmeter']['config']['xms_heap_size'] = '512m'
-default['cwbjmeter']['config']['xmx_heap_size'] = '1024m'
+default['cwbjmeter']['config']['xmx_heap_size'] = '900m'
 
 default['cwbjmeter']['config']['user_properties']['sample_variables'] = ''
 
