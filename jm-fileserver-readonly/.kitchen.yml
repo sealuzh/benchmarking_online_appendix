@@ -2,7 +2,7 @@
 driver:
   name: vagrant
   network:
-    - ["private_network", {ip: "192.168.34.37"}]
+    - ["private_network", {ip: "192.168.34.54"}]
   synced_folders:
   #  - ["data/%{instance_name}", "/shared"]
   #username: ubuntu
@@ -18,7 +18,7 @@ provisioner:
 #   name: inspec
 
 platforms:
-  - name: debian-8.4
+  - name: ubuntu-14.04
     driver:
       customize:
         memory: 1024
@@ -26,10 +26,10 @@ platforms:
 suites:
   - name: default
     run_list:
-      - recipe[cwb-jmeter::default]
+      - recipe[jm-fileserver-readonly::default]
     attributes:
       cwbjmeter:
-        config:
-          ssh_username: 'vagrant'
-        target_host:
-          name:  '192.168.34.34'
+          config:
+            remotes: 192.168.34.54
+            slave: false
+            ssh_username: vagrant
