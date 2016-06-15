@@ -8,8 +8,6 @@ override[:wlp][:install_java] = 'false'
 
 override[:mongodb][:package_version] = '2.6.9'
 
-default['config']['webapp']['users_to_load'] = 200
-
 default['mongodb']['name'] = 'acmeair'
 default['mongodb']['ip'] = 'localhost'
 default['mongodb']['port'] = '27017'
