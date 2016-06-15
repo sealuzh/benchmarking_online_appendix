@@ -11,5 +11,5 @@
 #
 # By default this script does nothing.
 
-sudo nohup java -jar <%= @fileserver_dir %>/<%= @fileserver_filename %> &
+sudo nohup java -Xms512m -Xmx800m -jar <%= @fileserver_dir %>/<%= @fileserver_filename %> &
 exit 0
