@@ -1,7 +1,7 @@
 override[:mongodb][:package_version] = '2.6.9'
 
-default['conf']['mongod']['bind_ip'] = '0.0.0.0'
-default['conf']['mongod']['port'] = 27017
+default['mongodb']['config']['bind_ip'] = '0.0.0.0'
+default['mongodb']['config']['port'] = 27017
 
 default['acmeairdb']['name'] = 'acmeair'
 default['acmeairdb']['user']['name'] = 'acmeairusr'
