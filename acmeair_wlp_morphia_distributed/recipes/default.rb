@@ -4,16 +4,16 @@
 #
 # Copyright (c) 2016 The Authors, All Rights Reserved.
 
-
+include_recipe 'apt::default'
 include_recipe 'firewall::default'
+include_recipe 'java::default'
 
 ports = node[:firewall][:ports]
 firewall_rule "open ports #{ports}" do
   port ports
 end
 
-include_recipe 'apt::default'
-include_recipe 'java::default'
+
 
 
 apt_package 'git' do
@@ -88,8 +88,20 @@ template '/opt/was/liberty/wlp/usr/servers/server1/server.xml' do
 	 :mongodb_user_name => node[:mongodb][:user][:name],
 	 :mongodb_user_password => node[:mongodb][:user][:password],
    :http_port => node[:config][:webapp][:port][:http],
-   :https_port => node[:config][:webapp][:port][:https]
+   :https_port => node[:config][:webapp][:port][:https],
+   :max_keep_alive_requests => node[:config][:tuning][:max_keep_alive_requests]
 	})
+end
+
+template '/opt/was/liberty/wlp/usr/servers/server1/jvm.options' do
+  source 'jvm.options.erb'
+  owner 'wlp'
+  group 'wlpadmin'
+  mode '0644'
+  variables({
+   :heap_xms => node[:config][:tuning][:heap_xms],
+   :heap_xmx => node[:config][:tuning][:heap_xmx]
+  })
 end
 
 wlp_server "server1" do
