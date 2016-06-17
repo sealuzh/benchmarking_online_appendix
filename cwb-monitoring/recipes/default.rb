@@ -13,7 +13,7 @@ if node['cwb-monitoring']['jstatd']['enabled']
 	  	Dir.chdir('/usr/lib/jvm/java-7-openjdk-amd64/lib') do
 	 		File.open("#{jstatd_logpath}/log.log", "a+") {|f| f.puts("Log:")}
 
-	    	hostname = %x[curl http://ipecho.net/plain]
+	    	hostname = %x[wget -qO- http://ipecho.net/plain]
 	 		File.open("/usr/lib/jvm/java-7-openjdk-amd64/lib/all.policy", "w+") {|f| 
 	 			f.write('grant codebase "file:tools.jar" {permission java.security.AllPermission;};') 
 	 		}
