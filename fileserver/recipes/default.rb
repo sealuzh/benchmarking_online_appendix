@@ -33,14 +33,16 @@ end
 
 #TODO: make arguments configurable and don't forgett to update the template for autorun command in templates folder!
 execute 'run_fileserver' do
-  command "sudo nohup java -Xms512m -Xmx800m -jar #{fileserver_filename} &"
+  command "sudo nohup java -Xms#{node[:fileserver][:config][:heap_size_xms]} -Xmx#{node[:fileserver][:config][:heap_size_xmx]} -jar #{fileserver_filename} &"
   cwd "#{fileserver_dir}"
 end
 
 template '/etc/rc.local' do
   source 'rc.local.erb'
   variables({
-     :fileserver_dir => fileserver_dir,
-     :fileserver_filename => fileserver_filename
+    :fileserver_dir => fileserver_dir,
+    :fileserver_filename => fileserver_filename,
+    :heap_size_xms => node[:fileserver][:config][:heap_size_xms],
+    :heap_size_xmx => node[:fileserver][:config][:heap_size_xmx]
   })
 end
