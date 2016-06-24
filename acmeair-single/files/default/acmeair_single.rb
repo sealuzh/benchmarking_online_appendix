@@ -51,6 +51,7 @@ class AcmeairSingle < Cwb::Benchmark
 					jtl_results=process_jtl_results
 					@cwb.submit_metric('total_thread_count', timestamp, jtl_results[:total_thread_count])
 					@cwb.submit_metric('singl_thread_counts', timestamp, jtl_results[:singl_thread_counts])
+					@cwb.submit_metric('number_of_slaves', timestamp, jtl_results[:number_of_slaves])
 					@cwb.submit_metric('jtl_results', timestamp, jtl_results.to_s)
 
 
@@ -247,11 +248,13 @@ class AcmeairSingle < Cwb::Benchmark
 		   end
 		end
 
+		number_of_slaves = thread_groups.length
 		singl_thread_counts = thread_groups.values
 		total_thread_count = singl_thread_counts.inject(0, :+)
 		return { 
 			total_thread_count: total_thread_count,
-			singl_thread_counts: singl_thread_counts.to_s 
+			singl_thread_counts: singl_thread_counts.to_s ,
+			number_of_slaves: number_of_slaves
 		}
 	end
 end
