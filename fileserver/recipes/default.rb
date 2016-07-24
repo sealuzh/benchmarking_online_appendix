@@ -31,7 +31,6 @@ cookbook_file "#{fileserver_dir}/#{fileserver_filename}" do
   action :create
 end
 
-#TODO: make arguments configurable and don't forgett to update the template for autorun command in templates folder!
 execute 'run_fileserver' do
   command "sudo nohup java -Xms#{node[:fileserver][:config][:heap_size_xms]} -Xmx#{node[:fileserver][:config][:heap_size_xmx]} -jar #{fileserver_filename} &"
   cwd "#{fileserver_dir}"
