@@ -5,6 +5,9 @@ default['config']['tuning']['heap_xms'] = '256m'
 default['config']['tuning']['heap_xmx'] = '512m'
 default['config']['tuning']['max_keep_alive_requests'] = -1
 
+default['mongodb']['ip_from_file'] = false
+default['mongodb']['ip_file_path_name'] = '/mongodb-ip.env'
+
 default['mongodb']['name'] = 'acmeair'
 default['mongodb']['ip'] = '172.31.2.1'
 default['mongodb']['port'] = 27017

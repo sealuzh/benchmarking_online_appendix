@@ -39,6 +39,10 @@ cookbook_file "#{jmeter_root}/bin/jmeter.properties" do
   action :create
 end
 
+remotes = node[:cwbjmeter][:config][:remotes]
+if node[:cwbjmeter][:config][:remotes_from_file] and File.exist?(node[:cwbjmeter][:config][:remotes_file_path_name])
+  remotes = ::File.read(node[:cwbjmeter][:config][:remotes_file_path_name]).chomp
+end
 
 template "#{jmeter_root}/bin/user.properties" do
   source 'user.properties.erb'
@@ -46,7 +50,7 @@ template "#{jmeter_root}/bin/user.properties" do
   owner 'root'
   group 'root'
   variables({
-     :remotes => node[:cwbjmeter][:config][:remotes],
+     :remotes => remotes,
      :sample_variables => node[:cwbjmeter][:config][:user_properties][:sample_variables]
   })
 end

@@ -13,9 +13,6 @@ firewall_rule "open ports #{ports}" do
   port ports
 end
 
-
-
-
 apt_package 'git' do
   action :install
 end
@@ -32,18 +29,6 @@ end
 #execute 'export_mongodb_VCAP' do
 #  command 'export VCAP_SERVICES=\'{"mongo":[{"credentials":{"url":"mongodb://<user>:<pwd>@<host>:<port>/<dbname>"}}]}\''
 #end
-
-execute 'export_WLP_BIN' do
-  command 'sudo echo "WLP_SERVER=/opt/was/liberty/wlp/bin" >> /etc/environment'
-end
-
-execute 'export_WLP_START' do
-  command 'sudo echo "WLP_START=/opt/was/liberty/wlp/bin/server start server1" >> /etc/environment'
-end
-
-execute 'export_WLP_STOP' do
-  command 'sudo echo "WLP_STOP=/opt/was/liberty/wlp/bin/server stop server1" >> /etc/environment'
-end
 
 execute 'mkdir_mongo-java-driver' do
   command 'mkdir ./mongodb'
@@ -76,13 +61,18 @@ execute 'copy_webapp' do
   command 'cp /acmeair-buildfiles/acmeair-webapp/build/libs/acmeair-webapp-2.0.0-SNAPSHOT.war /opt/was/liberty/wlp/usr/servers/server1/apps/'
 end
 
+mongodb_ip = node[:mongodb][:ip]
+if node[:mongodb][:ip_from_file] and File.exist?(node[:mongodb][:ip_file_path_name])
+  mongodb_ip = ::File.read(node[:mongodb][:ip_file_path_name]).chomp
+end
+
 template '/opt/was/liberty/wlp/usr/servers/server1/server.xml' do
 	source 'server.xml.erb'
 	owner 'wlp'
 	group 'wlpadmin'
 	mode '0644'
 	variables({
-	 :mongodb_ip => node[:mongodb][:ip],
+	 :mongodb_ip => mongodb_ip,
 	 :mongodb_port => node[:mongodb][:port],
 	 :mongodb_name => node[:mongodb][:name],
 	 :mongodb_user_name => node[:mongodb][:user][:name],

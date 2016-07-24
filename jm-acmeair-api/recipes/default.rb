@@ -9,6 +9,12 @@ include_recipe 'cwb-jmeter::default'
 
 jmeter_root = node[:cwbjmeter][:config][:jmeter_root]
 
+
+target_host_name = node[:acmeairapi][:testplan][:target_host][:name]
+if node[:acmeairapi][:testplan][:target_host][:name_from_file] and File.exist?(node[:acmeairapi][:testplan][:target_host][:file_path_name])
+  target_host_name = ::File.read(node[:acmeairapi][:testplan][:target_host][:file_path_name]).chomp
+end
+
 #update the testplan.jmx
 template "#{jmeter_root}/bin/jmeter_testplan.jmx" do
   source 'jmeter_testplan.jmx.erb'
@@ -17,7 +23,7 @@ template "#{jmeter_root}/bin/jmeter_testplan.jmx" do
   group 'root'
   variables({
     :target_host_port => node[:acmeairapi][:testplan][:target_host][:port],  
-    :target_host_name => node[:acmeairapi][:testplan][:target_host][:name],
+    :target_host_name => target_host_name,
     :threadgroup_num_threads => node[:acmeairapi][:testplan][:threadgroup][:num_threads],
     :threadgroup_ramp_up_time => node[:acmeairapi][:testplan][:threadgroup][:ramp_up_time],
     :threadgroup_duration => node[:acmeairapi][:testplan][:threadgroup][:duration],
