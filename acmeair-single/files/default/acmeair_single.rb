@@ -62,13 +62,15 @@ class AcmeairSingle < Cwb::Benchmark
 				
 					if results_file_upload_enabled
 						@logger.info "Uploading #{results_file} to fileserver"
-						system(upload_jtl_to_server_cmd(i))
+						# system(upload_jtl_to_server_cmd(i))
+						system(upload_file_to_server_cmd(i,results_file,results_file_name,results_file_type))
 						fail 'Results file: upload failed' unless $?.success? 
 					end
 
 					if log_file_upload_enabled
 						@logger.info "Uploading #{log_file} to fileserver"
-						system(upload_log_to_server_cmd(i))
+						# system(upload_log_to_server_cmd(i))
+						system(upload_file_to_server_cmd(i,log_file,log_file_name, log_file_type))
 						fail 'Log file: upload failed' unless $?.success?
 					end
 
@@ -133,8 +135,12 @@ class AcmeairSingle < Cwb::Benchmark
 		@cwb.deep_fetch('acmeair-single', 'log_file_name')
 	end
 
+	def log_file_type
+		"log"
+	end
+
 	def log_file
-		"#{log_file_name}.log"
+		"#{log_file_name}.#{log_file_type}"
 	end
 
 	def log_file_upload_enabled
@@ -145,8 +151,12 @@ class AcmeairSingle < Cwb::Benchmark
 		@cwb.deep_fetch('acmeair-single', 'results_file_name')
 	end
 
+	def results_file_type
+		'jtl'
+	end
+
 	def results_file
-		"#{results_file_name}.jtl"
+		"#{results_file_name}.#{results_file_type}"
 	end
 
 	def results_file_upload_enabled
@@ -169,12 +179,16 @@ class AcmeairSingle < Cwb::Benchmark
 		File.delete(results_file) if File.exist?(results_file)
 	end
 
-	def upload_jtl_to_server_cmd(iteration)
-		"curl -i -F file=@#{results_file} -F name='#{results_file_name}_#{iteration}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
-	end
+	# def upload_jtl_to_server_cmd(iteration)
+	# 	"curl -i -F file=@#{results_file} -F name='#{results_file_name}_#{iteration}_#{timestamp_formatted}.jtl' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	# end
 
-	def upload_log_to_server_cmd(iteration)
-		"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{iteration}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	# def upload_log_to_server_cmd(iteration)
+	# 	"curl -i -F file=@#{log_file} -F name='#{log_file_name}_#{iteration}_#{timestamp_formatted}.log' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
+	# end
+
+	def upload_file_to_server_cmd(iteration, file, name, type)
+		"curl -i -F file=@#{file} -F name='#{name}-iter#{iteration}-tst#{timestamp_formatted}.#{type}' http://#{filserver_ip}:#{fileserver_port}/#{fileserver_resource}"
 	end
 
 	def process_results
