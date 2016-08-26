@@ -1,5 +1,5 @@
 default['firewall']['allow_ssh'] = true
-default['morphia_server']['open_ports'] = [9080]
+default['morphia_server']['open_ports'] = 9080
 
 override[:java][:jdk_version] = 7
 override[:wlp][:install_method] = 'zip'

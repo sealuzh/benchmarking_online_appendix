@@ -1,4 +1,3 @@
-#
 # Cookbook Name:: acmeair_wlp_morphia
 # Recipe:: default
 #
@@ -25,16 +24,10 @@ end
 include_recipe 'wlp::default'
 
 #download the mongo-java-driver
-execute 'download_mongo-java-driver' do
-  command 'wget https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/2.12.2/mongo-java-driver-2.12.2.jar'
-  cwd '/'
-  not_if {::File.exists?('/opt/was/liberty/wlp/usr/shared/resources/mongodb/mongo-java-driver-2.12.2.jar') }
+cookbook_file '/mongo-java-driver-2.12.2.jar' do
+  mode '0644'
+  not_if {::File.exists?('/mongo-java-driver-2.12.2.jar') }
 end
-
-#needs the mongo driver to installed in the application not the context but works 
-#execute 'export_mongodb_VCAP' do
-#  command 'export VCAP_SERVICES=\'{"mongo":[{"credentials":{"url":"mongodb://<user>:<pwd>@<host>:<port>/<dbname>"}}]}\''
-#end
 
 #make a folder
 execute 'mkdir_mongo-java-driver' do
@@ -50,21 +43,6 @@ execute 'move_mongo-java-driver' do
   not_if {::File.exists?('/opt/was/liberty/wlp/usr/shared/resources/mongodb/mongo-java-driver-2.12.2.jar') }
 end
 
-#add shorthand $WLP_DIR
-execute 'export_WLP_DIR' do
-  command 'sudo echo "WLP_DIR=/opt/was/liberty/wlp/" >> /etc/environment'
-end
-
-#add shorthand to start the server $WLP_START
-execute 'export_WLP_START' do
-  command 'sudo echo "WLP_START=/opt/was/liberty/wlp/bin/server start server1" >> /etc/environment'
-end
-
-#add shorthand to stop the server $WLP_STOP
-execute 'export_WLP_STOP' do
-  command 'sudo echo "WLP_STOP=/opt/was/liberty/wlp/bin/server stop server1" >> /etc/environment'
-end
-
 #install mongodb feature to WLP
 wlp_install_feature "mongodb" do
   location "mongodb-2.0"
@@ -76,16 +54,15 @@ wlp_server "server1" do
   action :create
 end
 
-#download the buildfiles for acmeair
-git '/acmeair-buildfiles' do
-  repository 'https://github.com/crixx/acmeair-buildfiles.git'
-  revision 'morphia-distributed'
-  action :sync
+cookbook_file '/acmeair-webapp-2.0.0-SNAPSHOT.war' do
+  mode '0644'
+  not_if {::File.exists?('/acmeair-webapp-2.0.0-SNAPSHOT.war') }
 end
+
 
 #copy to buildfiles to the WLP folder
 execute 'copy_webapp' do
-  command 'cp /acmeair-buildfiles/acmeair-webapp/build/libs/acmeair-webapp-2.0.0-SNAPSHOT.war /opt/was/liberty/wlp/usr/servers/server1/apps/'
+  command 'cp /acmeair-webapp-2.0.0-SNAPSHOT.war /opt/was/liberty/wlp/usr/servers/server1/apps/'
 end
 
 template '/opt/was/liberty/wlp/usr/servers/server1/server.xml' do
@@ -117,7 +94,6 @@ directory "/dump" do
   action :create
 end
 
-
 cookbook_file '/acmeair_mongodb_dump.tar.gz' do
   mode '0644'
   not_if {::File.exists?('/acmeair_mongodb_dump.tar.gz') }
@@ -133,7 +109,6 @@ execute 'looad_db_from_dump' do
   not_if { ::File.directory?('/dump/admin') }
 end
 
-
 template '/load_db_user.js' do
   source 'load_db_user.js.erb'
   owner 'root'
@@ -148,8 +123,3 @@ execute 'looad_db_user_to_db' do
   command "mongo localhost:#{node[:mongodb][:port]}/#{node[:mongodb][:name]} /load_db_user.js"
   not_if { ::File.directory?('/dump/admin') }
 end
-
-#execute 'run_vmstat' do
-#  command 'sudo nohup vmstat 5 > vmstat.log &'
-#  cwd '/'
-#end
