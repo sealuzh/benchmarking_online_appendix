@@ -1,7 +1,5 @@
 # Cookbook Name:: acmeair_wlp_morphia
 # Recipe:: default
-#
-# Copyright (c) 2016 The Authors, All Rights Reserved.
 
 
 #configure firewall
