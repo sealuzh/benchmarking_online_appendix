@@ -1,8 +1,5 @@
-#
 # Cookbook Name:: acmeair_wlp_morphia_distributed
 # Recipe:: default
-#
-# Copyright (c) 2016 The Authors, All Rights Reserved.
 
 include_recipe 'apt::default'
 include_recipe 'firewall::default'
@@ -19,16 +16,12 @@ end
 
 include_recipe 'wlp::default'
 
-execute 'download_mongo-java-driver' do
-  command 'wget https://oss.sonatype.org/content/repositories/releases/org/mongodb/mongo-java-driver/2.12.2/mongo-java-driver-2.12.2.jar'
-  cwd '/'
-  not_if {::File.exists?('/opt/was/liberty/wlp/usr/shared/resources/mongodb/mongo-java-driver-2.12.2.jar') }
+#download the mongo-java-driver
+cookbook_file '/mongo-java-driver-2.12.2.jar' do
+  mode '0644'
+  not_if {::File.exists?('/mongo-java-driver-2.12.2.jar') }
 end
 
-#needs the mongo driver to installed in the application not the context but works 
-#execute 'export_mongodb_VCAP' do
-#  command 'export VCAP_SERVICES=\'{"mongo":[{"credentials":{"url":"mongodb://<user>:<pwd>@<host>:<port>/<dbname>"}}]}\''
-#end
 
 execute 'mkdir_mongo-java-driver' do
   command 'mkdir ./mongodb'
@@ -51,14 +44,13 @@ wlp_server "server1" do
   action :create
 end
 
-git '/acmeair-buildfiles' do
-  repository 'https://github.com/crixx/acmeair-buildfiles.git'
-  revision 'morphia-distributed'
-  action :sync
+cookbook_file '/acmeair-webapp-2.0.0-SNAPSHOT.war' do
+  mode '0644'
+  not_if {::File.exists?('/acmeair-webapp-2.0.0-SNAPSHOT.war') }
 end
 
 execute 'copy_webapp' do
-  command 'cp /acmeair-buildfiles/acmeair-webapp/build/libs/acmeair-webapp-2.0.0-SNAPSHOT.war /opt/was/liberty/wlp/usr/servers/server1/apps/'
+  command 'cp /acmeair-webapp-2.0.0-SNAPSHOT.war /opt/was/liberty/wlp/usr/servers/server1/apps/'
 end
 
 mongodb_ip = node[:mongodb][:ip]

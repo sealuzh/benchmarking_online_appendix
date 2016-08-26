@@ -23,3 +23,10 @@ suites:
     run_list:
       - recipe[acmeair_wlp_morphia_distributed::default]
     attributes:
+        mongodb:
+          name: acmeair
+          ip: "192.168.34.36"
+          port: 27017
+          user:
+            name : 'acmeairusr'
+            password': 'Login4Acme!'
