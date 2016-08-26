@@ -6,4 +6,3 @@ default['mongodb']['config']['port'] = 27017
 default['acmeairdb']['name'] = 'acmeair'
 default['acmeairdb']['user']['name'] = 'acmeairusr'
 default['acmeairdb']['user']['password'] = 'Login4Acme!'
-

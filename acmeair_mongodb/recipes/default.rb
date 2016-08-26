@@ -1,8 +1,5 @@
-#
 # Cookbook Name:: acmeair_mongodb
 # Recipe:: default
-#
-# Copyright (c) 2016 The Authors, All Rights Reserved.
 
 #install mongodb in older version
 include_recipe "mongodb::10gen_repo"
