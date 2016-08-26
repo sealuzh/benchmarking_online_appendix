@@ -1,8 +1,5 @@
-#
 # Cookbook Name:: acmeair_wlp_wxs
 # Recipe:: default
-#
-# Copyright (c) 2016 The Authors, All Rights Reserved.
 
 include_recipe 'firewall::default'
 
@@ -41,11 +38,6 @@ apt_package 'unzip' do
   action :install
 end
 
-#install git
-apt_package 'git' do
-  action :install
-end
-
 #install websphere liberty
 include_recipe 'wlp::default'
 
@@ -67,11 +59,17 @@ wlp_server "server1" do
   action :create
 end
 
-#download the buildfiles from git
-git '/acmeair-buildfiles' do
-  repository 'https://github.com/crixx/acmeair-buildfiles.git'
-  revision 'master'
-  action :sync
+#copy build files folder
+cookbook_file '/acmeair-buildfiles.zip' do
+  source 'acmeair-buildfiles.zip'
+  action :create
+end
+
+#unzip it
+execute 'buildfiles_unzip' do
+  command 'unzip acmeair-buildfiles.zip'
+  cwd '/'
+  not_if { ::File.directory?('/acmeair-buildfiles') }
 end
 
 #copy the webapp to the server
@@ -148,11 +146,6 @@ wlp_server "server1" do
   clean true
   action :start
 end
-
-#needs the mongo driver to installed in the application not the context but works 
-#execute 'export_mongodb_VCAP' do
-#  command 'export VCAP_SERVICES=\'{"mongo":[{"credentials":{"url":"mongodb://<user>:<pwd>@<host>:<port>/<dbname>"}}]}\''
-#end
 
 ruby_block 'load_users_to_db' do
   block do   

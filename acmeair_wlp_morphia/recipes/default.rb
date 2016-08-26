@@ -13,10 +13,6 @@ end
 include_recipe 'apt::default'
 #install java
 include_recipe 'java::default'
-#install git
-apt_package 'git' do
-  action :install
-end
 
 #install wlp
 include_recipe 'wlp::default'
