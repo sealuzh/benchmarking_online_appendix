@@ -1,38 +1,14 @@
 # acmeair-single
 
-Installs the `acmeair-single` benchmark and provides utilities to integrate with Cloud WorkBench.
+Installs the `acmeair-single` benchmark and provides utilities to integrate with Cloud WorkBench. This cookbook enables the cwb-framework to display the different states of progress as well as to start the JMeter process in master or slave mode.
 
 ## Attributes
 
 See `attributes/default.rb`
 
 ## Usage
-
-### Cloud WorkBench
-
-| Metric Name                  | Unit              | Scale Type    |
-| ---------------------------- | ----------------- | ------------- |
-| **metric-name**              | unit              | ratio/nominal |
-| cpu                          | model-name        | nominal       |
-
-**bold-written** metrics are mandatory
-
-### acmeair-single::default
-
-Add the `acmeair-single` default recipe to your Chef configuration in the Vagrantfile:
-
-```ruby
-config.vm.provision 'cwb', type: 'chef_client' do |chef|
-  chef.add_recipe 'acmeair-single@0.1.0'  # Version is optional
-  chef.json =
-  {
-    'acmeair-single' => {
-        'metric_name' => 'execution_time',
-    },
-  }
-end
-```
+Please refer to the "sample_configurations" folder in the root of this repository.
 
 ## License and Authors
-
-Author:: YOUR_NAME (<YOUR_EMAIL>)
+License: GNU General Public License v3.0
+Author: Christian Davatz (crixx)
